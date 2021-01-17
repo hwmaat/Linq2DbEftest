@@ -23,9 +23,13 @@ namespace KlantPortaalApi.Services
 		{
 			try
 			{
-				var items = await _dbContext.Clients
-					.ToListAsync();
-				return items;
+				var items = from cl in _dbContext.Clients
+							select cl;
+
+				items = items.ToLinqToDB();
+				var result = await items.ToListAsync().ConfigureAwait(true);
+
+				return result;
 			}
 			catch
 			{
@@ -55,7 +59,6 @@ namespace KlantPortaalApi.Services
 				query = query.ToLinqToDB();
 				var result = await query.ToListAsync().ConfigureAwait(true);
 
-
 				//var items = (
 				//	from cl in _dbContext.Clients
 				//	join or in _dbContext.Orders on cl.ClientId equals or.ClientId into ordersJoin from or in ordersJoin.DefaultIfEmpty()
@@ -70,7 +73,6 @@ namespace KlantPortaalApi.Services
 				//		 Country = cl.Country,
 				//		 Price = or == null ? 0 : or.Price
 				//    }
-
 				//	)
 				//	.AsNoTracking()
 				//	.ToList();
@@ -87,11 +89,12 @@ namespace KlantPortaalApi.Services
 		{
 			try
 			{
-				var item = await _dbContext.Clients
-					.Where(_ => _.ClientId == clientId)
-					.FirstOrDefaultAsync();
+				var item = _dbContext.Clients
+					.Where(_ => _.ClientId == clientId);
 
-				return item;
+				item = item.ToLinqToDB();
+				var result = await item.FirstOrDefaultAsync().ConfigureAwait(true);
+				return result;
 			}
 			catch
 			{

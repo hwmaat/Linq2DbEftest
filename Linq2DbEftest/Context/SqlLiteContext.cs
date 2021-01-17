@@ -1,11 +1,14 @@
 ﻿using Linq2DbEftest.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Linq2DbEftest.Context
 {
     public class SqlLiteContext : DbContext
     {
+        public static readonly Microsoft.Extensions.Logging.LoggerFactory _myLoggerFactory =
+           new LoggerFactory(new[] { new Microsoft.Extensions.Logging.Debug.DebugLoggerProvider() });
         protected readonly IConfiguration Configuration;
         public SqlLiteContext(IConfiguration configuration)
         {
@@ -15,7 +18,9 @@ namespace Linq2DbEftest.Context
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlite(Configuration.GetConnectionString("localdb"), b => b.MigrationsAssembly("Linq2DbEftest"));
+                optionsBuilder
+                    .UseLoggerFactory(_myLoggerFactory)
+                    .UseSqlite(Configuration.GetConnectionString("localdb"), b => b.MigrationsAssembly("Linq2DbEftest")).EnableSensitiveDataLogging();
             }
         }
         public virtual DbSet<Client> Clients { get; set; }
