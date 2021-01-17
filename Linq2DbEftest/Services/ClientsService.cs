@@ -1,12 +1,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Linq2DbEftest.Context;
 using Linq2DbEftest.Interfaces;
 using Linq2DbEftest.Models;
-
+using LinqToDB;
+using LinqToDB.EntityFrameworkCore;
 
 namespace KlantPortaalApi.Services
 {
@@ -19,16 +19,12 @@ namespace KlantPortaalApi.Services
 			_dbContext = dbContext;
 
 		}
-
 		public async Task<IEnumerable<Client>> GetAllClients()
 		{
 			try
 			{
-				var items =  await _dbContext.Clients
-					.AsNoTracking()
-					.ToListAsync()
-					.ConfigureAwait(false);
-				;
+				var items = await _dbContext.Clients
+					.ToListAsync();
 				return items;
 			}
 			catch
@@ -38,16 +34,48 @@ namespace KlantPortaalApi.Services
 		}
 
 		
-		public async Task<IEnumerable<Order>> GetOrdersForClient(int clientId)
+		public async Task<IEnumerable<ClientOrders>> GetOrdersForClient(int clientId)
 		{
 			try
 			{
-				var items = await _dbContext.Orders
-					.Where(_ => _.ClientId == clientId)
-					.AsNoTracking()
-					.ToListAsync();
+				var query = from cl in _dbContext.Clients
+							from or in _dbContext.Orders.LeftJoin(o => o.ClientId == cl.ClientId)
+							where cl.ClientId == clientId
+							select new ClientOrders
+							{
+								ClientId = cl.ClientId,
+								ClientName = cl.Name,
+								OrderId = or == null ? 0 : or.OrderId,
+								Description = or == null ? "" : or.Description,
+								OrderDate = or == null ? "" : or.OrderDate,
+								Country = cl.Country,
+								Price = or == null ? 0 : or.Price
+							};
 
-				return items;
+				query = query.ToLinqToDB();
+				var result = await query.ToListAsync().ConfigureAwait(true);
+
+
+				//var items = (
+				//	from cl in _dbContext.Clients
+				//	join or in _dbContext.Orders on cl.ClientId equals or.ClientId into ordersJoin from or in ordersJoin.DefaultIfEmpty()
+				//	where cl.ClientId == clientId
+				//	select new ClientOrders
+				//	{
+				//		 ClientId = cl.ClientId,
+				//		 ClientName = cl.Name,
+				//		 OrderId = or== null?0:or.OrderId,
+				//		 Description = or == null ? "": or.Description,
+				//		 OrderDate = or == null ? "" : or.OrderDate,
+				//		 Country = cl.Country,
+				//		 Price = or == null ? 0 : or.Price
+				//    }
+
+				//	)
+				//	.AsNoTracking()
+				//	.ToList();
+
+				return result;
 			}
 			catch
 			{
@@ -61,7 +89,6 @@ namespace KlantPortaalApi.Services
 			{
 				var item = await _dbContext.Clients
 					.Where(_ => _.ClientId == clientId)
-					.AsNoTracking()
 					.FirstOrDefaultAsync();
 
 				return item;

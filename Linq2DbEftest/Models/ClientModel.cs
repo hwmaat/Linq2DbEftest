@@ -15,4 +15,16 @@ namespace Linq2DbEftest.Models
 
     }
 
+    public class ClientOrders
+    {
+        public int ClientId { get; set; }
+        public string ClientName { get; set; }
+        public string Country { get; set; }
+        public int OrderId { get; set; }
+        public string OrderDate { get; set; }
+        public string Description { get; set; }
+        public decimal Price { get; set; }
+
+    }
+
 }

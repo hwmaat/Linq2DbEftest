@@ -10,7 +10,7 @@ namespace Linq2DbEftest.Interfaces
 	public interface IClientsService
 	{
 		Task<IEnumerable<Client>> GetAllClients();
-		Task<IEnumerable<Order>> GetOrdersForClient(int clientId);
+		Task<IEnumerable<ClientOrders>> GetOrdersForClient(int clientId);
 		Task<Client> GetClientById(int clientId);
 
 	}
