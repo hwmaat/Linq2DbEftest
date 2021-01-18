@@ -7,6 +7,7 @@ using Linq2DbEftest.Interfaces;
 using Linq2DbEftest.Models;
 using LinqToDB;
 using LinqToDB.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace KlantPortaalApi.Services
 {
@@ -25,10 +26,8 @@ namespace KlantPortaalApi.Services
 			{
 				var items = from cl in _dbContext.Clients
 							select cl;
-
 				items = items.ToLinqToDB();
-				var result = await items.ToListAsync().ConfigureAwait(true);
-
+				var result = await items.AsNoTracking().ToListAsyncLinqToDB().ConfigureAwait(true);
 				return result;
 			}
 			catch
@@ -37,7 +36,6 @@ namespace KlantPortaalApi.Services
 			}
 		}
 
-		
 		public async Task<IEnumerable<ClientOrders>> GetOrdersForClient(int clientId)
 		{
 			try
@@ -57,7 +55,7 @@ namespace KlantPortaalApi.Services
 							};
 
 				query = query.ToLinqToDB();
-				var result = await query.ToListAsync().ConfigureAwait(true);
+				var result = await query.ToListAsyncLinqToDB().ConfigureAwait(true);
 
 				//var items = (
 				//	from cl in _dbContext.Clients
@@ -91,9 +89,9 @@ namespace KlantPortaalApi.Services
 			{
 				var item = _dbContext.Clients
 					.Where(_ => _.ClientId == clientId);
-
+				
 				item = item.ToLinqToDB();
-				var result = await item.FirstOrDefaultAsync().ConfigureAwait(true);
+				var result = await item.FirstOrDefaultAsyncLinqToDB().ConfigureAwait(true);
 				return result;
 			}
 			catch
